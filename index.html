@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Bitácora de Registro y Control de Acceso</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f1f5f9; color: #334155; min-height: 100vh; }
+        
+        .hidden { display: none !important; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: 0.2s; }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-success:hover { background: #059669; }
+        .btn-secondary { background: #64748b; color: #fff; }
+
+        /* PANTALLA SELECCIÓN DE ROL / LOGIN */
+        #view-login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #0f172a; color: #fff; padding: 20px; }
+        .login-card { background: #1e293b; padding: 30px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+        .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .role-btn { background: #334155; color: #fff; padding: 18px 10px; border-radius: 8px; border: 1px solid #475569; font-size: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 600; }
+        .role-btn:hover { background: #2563eb; border-color: #3b82f6; }
+
+        /* MODAL LOGIN */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: #fff; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; color: #333; }
+
+        /* VISTAS GENERALES */
+        .top-bar { background: #1e293b; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+
+        /* VISTA EMPLEADOS & VISITANTES */
+        .card { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .org-btns { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-org { padding: 10px 15px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-org.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+
+        /* DASHBOARD LAYOUT */
+        .dashboard-layout { display: flex; height: calc(100vh - 60px); }
+        aside { width: 260px; background: #1e293b; color: #fff; display: flex; flex-direction: column; overflow-y: auto; }
+        .menu-group { border-bottom: 1px solid #334155; }
+        .menu-title { padding: 12px 20px 5px; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; }
+        .menu-sub { list-style: none; }
+        .menu-sub li { padding: 10px 20px 10px 30px; font-size: 0.88rem; color: #cbd5e1; cursor: pointer; }
+        .menu-sub li:hover, .menu-sub li.active { background: #334155; color: #3b82f6; font-weight: 600; }
+        main { flex: 1; padding: 25px; overflow-y: auto; background: #f8fafc; }
+
+        /* TABLAS Y LISTAS */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; border-radius: 6px; overflow: hidden; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        th { background: #f1f5f9; color: #475569; }
+
+        /* AFORO METRICAS */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .metric-num { font-size: 1.6rem; font-weight: bold; color: #2563eb; }
+
+        /* ESTILO IMPRESIÓN / PDF */
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. PANTALLA PRINCIPAL DE ROLES -->
+    <div id="view-login">
+        <div class="login-card">
+            <h2><i class="fa-solid fa-shield-halved"></i> Bitácora de Acceso</h2>
+            <p style="color: #94a3b8; margin-top: 5px;">Seleccione su perfil o tipo de ingreso</p>
+            
+            <div class="role-grid">
+                <button class="role-btn" onclick="showPublicView('view-empleados')"><i class="fa-solid fa-user-tie fa-2x"></i> Empleados</button>
+                <button class="role-btn" onclick="showPublicView('view-visitantes')"><i class="fa-solid fa-user-plus fa-2x"></i> Visitantes</button>
+                <button class="role-btn" onclick="openLoginModal('rh')"><i class="fa-solid fa-users-gear fa-2x"></i> Recursos Humanos</button>
+                <button class="role-btn" onclick="openLoginModal('recepcion')"><i class="fa-solid fa-id-badge fa-2x"></i> Vigilancia / Recepción</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INICIO SESION (RH Y VIGILANCIA) -->
+    <div id="modal-auth" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="auth-title" style="margin-bottom: 15px;">Iniciar Sesión</h3>
+            <form onsubmit="handleAuth(event)">
+                <input type="hidden" id="auth-role">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Usuario</label>
+                    <input type="text" id="auth-user" required placeholder="Ingrese usuario">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Contraseña</label>
+                    <input type="password" id="auth-pass" required placeholder="Ingrese contraseña">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Ingresar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. VISTA REGISTRO EMPLEADOS -->
+    <div id="view-empleados" class="hidden">
+        <div class="top-bar">
+            <h3><i class="fa-solid fa-user-tie"></i> Acceso de Empleados</h3>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fa-solid fa-house"></i> Menú Principal</button>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h4>1. Selecciona tu Organización:</h4>
+                <div class="org-btns" id="emp-org-list">
+                    <!-- Organizaciones dinámicas -->
+                </div>
+
+                <h4>2. Busca tu nombre:</h4>
+                <div class="form-group" style="margin: 15px 0;">
+                    <input type="text" id="emp-search" placeholder="Escribe tu nombre completo..." onkeyup="filterEmpleados()">
+                </div>
+
+                <div id="emp-results">
+                    <!-- Lista de resultados -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. VISTA REGISTRO VISITANTES -->
+    <div id="view-visitantes" class="hidden">
+        <div class="top-bar">
+            <h3><i class="fa-solid fa-user-plus"></i> Registro de Visitantes</h3>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fa-solid fa-house"></i> Menú Principal</button>
+        </div>
+        <div class="container">
+            <div class="card">
+                <form onsubmit="saveVisitante(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre Completo *</label>
+                            <input type="text" id="v-nombre" required placeholder="Nombre y Apellidos">
+                        </div>
+                        <div class="form-group">
+                            <label>Asunto de la Visita *</label>
+                            <input type="text" id="v-asunto" required placeholder="Motivo de la visita">
+                        </div>
+                        <div class="form-group">
+                            <label>Identificación Presentada *</label>
+                            <select id="v-identificacion" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="INE">INE</option>
+                                <option value="Pasaporte">Pasaporte</option>
+                                <option value="Credencial Escolar">Credencial Escolar</option>
+                                <option value="Licencia de Conducir">Licencia de Conducir</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label>¿Trae vehículo?</label>
+                        <select id="v-trae-auto" onchange="toggleAutoVisitante(this.value)">
+                            <option value="No">No</option>
+                            <option value="Sí">Sí</option>
+                        </select>
+                    </div>
+
+                    <div id="v-auto-fields" class="form-grid hidden">
+                        <div class="form-group">
+                            <label>Modelo del Auto</label>
+                            <input type="text" id="v-modelo" placeholder="Ej. Nissan Versa">
+                        </div>
+                        <div class="form-group">
+                            <label>Color</label>
+                            <input type="text" id="v-color" placeholder="Ej. Azul">
+                        </div>
+                        <div class="form-group">
+                            <label>Placas</label>
+                            <input type="text" id="v-placas" placeholder="Ej. ABC-123-A">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Registrarse</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. VISTA RECURSOS HUMANOS -->
+    <div id="view-rh" class="hidden">
+        <div class="top-bar">
+            <h3><i class="fa-solid fa-users-gear"></i> Panel de Recursos Humanos</h3>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+        </div>
+        <div class="container">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4>Directorio / Gestión de Empleados</h4>
+                    <button class="btn btn-success" onclick="openEmpModal()"><i class="fa-solid fa-plus"></i> Agregar Empleado</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Organización</th>
+                            <th>Puesto</th>
+                            <th>Ubicación</th>
+                            <th>Auto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rh-table-body">
+                        <!-- Carga dinámica -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. DASHBOARD VIGILANCIA Y RECEPCIÓN -->
+    <div id="view-recepcion" class="hidden">
+        <div class="top-bar">
+            <h3><i class="fa-solid fa-shield-cat"></i> Control de Vigilancia y Recepción</h3>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+        </div>
+        
+        <div class="dashboard-layout">
+            <!-- SIDEBAR ACCIONES DINAMICAS -->
+            <aside>
+                <div class="menu-group">
+                    <div class="menu-title">Aforo & Control</div>
+                    <ul class="menu-sub">
+                        <li class="active" onclick="dashNav('aforo', this)"><i class="fa-solid fa-chart-line"></i> Aforo Real & Reporte</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Registro de Personas</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('reg-peatonal', this)">Peatonal</li>
+                        <li onclick="dashNav('reg-vehicular', this)">Vehicular</li>
+                        <li onclick="dashNav('reg-empleado', this)">Empleado</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Ver personas</div>
+                    <ul class="menu-sub"><li onclick="dashNav('ver-personas', this)">Listado de personas</li></ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Eventos</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('evt-nuevo', this)">Nuevo evento</li>
+                        <li onclick="dashNav('evt-ver', this)">Ver eventos</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Incidencias</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('inc-nueva', this)">Nueva Incidencia</li>
+                        <li onclick="dashNav('inc-ver', this)">Ver incidencias</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Renta salas</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('sala-nueva', this)">Nueva renta</li>
+                        <li onclick="dashNav('sala-ver', this)">Ver rentas</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Organizaciones</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('org-nueva', this)">Nueva Org</li>
+                        <li onclick="dashNav('org-ver', this)">Ver Org</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Empleados</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('emp-nuevo', this)">Nuevo Empleado</li>
+                        <li onclick="dashNav('emp-ver', this)">Ver empleados</li>
+                    </ul>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-title">+ Proveedores</div>
+                    <ul class="menu-sub">
+                        <li onclick="dashNav('prov-lista', this)">Lista de proveedores</li>
+                        <li onclick="dashNav('prov-confirm', this)">Confirmación</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- VISTAS DINÁMICAS DEL DASHBOARD -->
+            <main id="dash-content">
+                <!-- AFORO EN TIEMPO REAL -->
+                <div id="dash-aforo" class="dash-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Aforo en Tiempo Real</h2>
+                        <button class="btn btn-primary" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> Generar PDF Aforo</button>
+                    </div>
+
+                    <div id="printable-area">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div>Total Personas Adentro</div>
+                                <div class="metric-num" id="metric-total">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div>Empleados Adentro</div>
+                                <div class="metric-num" id="metric-emp">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div>Visitantes Adentro</div>
+                                <div class="metric-num" id="metric-vis">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div>Autos en Estacionamiento</div>
+                                <div class="metric-num" id="metric-auto">0</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Personas Activas en Instalaciones (Edificios & Pisos)</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Nombre</th>
+                                        <th>Organización / Asunto</th>
+                                        <th>Ubicación (Edificio / Piso)</th>
+                                        <th>Vehículo (Placas)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aforo-table-body">
+                                    <!-- Datos de Aforo -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GENÉRICO PARA ACCIONES DEL PANEL -->
+                <div id="dash-generic" class="dash-panel hidden">
+                    <div class="card">
+                        <h2 id="dash-title">Título Sección</h2>
+                        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #e2e8f0;">
+                        <div id="dash-body">
+                            <!-- Los formularios dinámicos cargan aquí -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR / EDITAR EMPLEADO (RH) -->
+    <div id="modal-emp" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 id="emp-modal-title">Agregar Empleado</h3>
+            <form onsubmit="saveEmpleadoForm(event)">
+                <input type="hidden" id="emp-id">
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="form-emp-nombre" required>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Organización</label>
+                    <select id="form-emp-org" required></select>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Puesto</label>
+                    <input type="text" id="form-emp-puesto" required>
+                </div>
+                <div class="form-grid" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Edificio</label>
+                        <select id="form-emp-edificio">
+                            <option value="Edificio A">Edificio A</option>
+                            <option value="Edificio B">Edificio B</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Piso</label>
+                        <input type="text" id="form-emp-piso" placeholder="Ej. Piso 2">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>¿Tiene Auto?</label>
+                    <select id="form-emp-tiene-auto" onchange="toggleAutoEmpForm(this.value)">
+                        <option value="No">No</option>
+                        <option value="Sí">Sí</option>
+                    </select>
+                </div>
+                <div id="form-emp-auto-fields" class="form-grid hidden" style="margin-top: 10px;">
+                    <div class="form-group"><label>Modelo</label><input type="text" id="form-emp-modelo"></div>
+                    <div class="form-group"><label>Color</label><input type="text" id="form-emp-color"></div>
+                    <div class="form-group"><label>Placas</label><input type="text" id="form-emp-placas"></div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEmpModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS LOCAL Y ESTADO ---
+        let organizaciones = ["CEMEFI", "Fundación A.C.", "Unión Pro-RSE", "Asociación Civil"];
+        
+        let empleados = [
+            { id: 1, nombre: "Carlos Ruiz", org: "CEMEFI", puesto: "Sistemas", edificio: "Edificio A", piso: "Piso 1", tieneAuto: "Sí", modelo: "Mazda 3", color: "Rojo", placas: "MX-102", adentro: false },
+            { id: 2, nombre: "María López", org: "CEMEFI", puesto: "RH", edificio: "Edificio A", piso: "Piso 2", tieneAuto: "No", modelo: "", color: "", placas: "", adentro: false },
+            { id: 3, nombre: "Juan Pérez", org: "Fundación A.C.", puesto: "Director", edificio: "Edificio B", piso: "Piso 3", tieneAuto: "Sí", modelo: "Honda Civic", color: "Gris", placas: "GTO-889", adentro: false }
+        ];
+
+        let visitantes = [];
+        let orgSeleccionadaEmp = "CEMEFI";
+
+        // --- MANEJO DE NAVEGACIÓN Y AUTENTICACIÓN ---
+        function logout() {
+            document.querySelectorAll('#view-login, #view-empleados, #view-visitantes, #view-rh, #view-recepcion').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-login').classList.remove('hidden');
+        }
+
+        function showPublicView(viewId) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+            if(viewId === 'view-empleados') renderEmpPublicView();
+        }
+
+        function openLoginModal(role) {
+            document.getElementById('auth-role').value = role;
+            document.getElementById('auth-title').innerText = role === 'rh' ? 'Login Recursos Humanos' : 'Login Vigilancia / Recepción';
+            document.getElementById('auth-user').value = '';
+            document.getElementById('auth-pass').value = '';
+            document.getElementById('modal-auth').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const role = document.getElementById('auth-role').value;
+            const u = document.getElementById('auth-user').value;
+            const p = document.getElementById('auth-pass').value;
+
+            if (role === 'rh') {
+                if (u === 'Karen' && p === '456') {
+                    closeLoginModal();
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-rh').classList.remove('hidden');
+                    renderRH();
+                } else { alert('Usuario o contraseña incorrectos para Recursos Humanos.'); }
+            } else if (role === 'recepcion') {
+                if (u === 'pablito' && p === '123') {
+                    closeLoginModal();
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-recepcion').classList.remove('hidden');
+                    renderAforo();
+                } else { alert('Usuario o contraseña incorrectos para Vigilancia.'); }
+            }
+        }
+
+        // --- VISTA EMPLEADOS ---
+        function renderEmpPublicView() {
+            const containerBtns = document.getElementById('emp-org-list');
+            containerBtns.innerHTML = '';
+            organizaciones.forEach(org => {
+                const b = document.createElement('button');
+                b.className = `btn-org ${org === orgSeleccionadaEmp ? 'active' : ''}`;
+                b.innerText = org;
+                b.onclick = () => { orgSeleccionadaEmp = org; renderEmpPublicView(); };
+                containerBtns.appendChild(b);
+            });
+            filterEmpleados();
+        }
+
+        function filterEmpleados() {
+            const query = document.getElementById('emp-search').value.toLowerCase();
+            const container = document.getElementById('emp-results');
+            container.innerHTML = '';
+
+            const filtrados = empleados.filter(e => e.org === orgSeleccionadaEmp && e.nombre.toLowerCase().includes(query));
+
+            if(filtrados.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;">No se encontraron empleados en esta organización.</p>';
+                return;
+            }
+
+            filtrados.forEach(emp => {
+                const div = document.createElement('div');
+                div.style.cssText = 'padding:15px; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;';
+                div.innerHTML = `
+                    <div>
+                        <strong>${emp.nombre}</strong> - <small>${emp.puesto}</small><br>
+                        <small style="color:#64748b;">Ubicación: ${emp.edificio} (${emp.piso})</small><br>
+                        <small style="color:#64748b;">Vehículo: ${emp.tieneAuto === 'Sí' ? `${emp.modelo} | ${emp.color} | Placas: ${emp.placas}` : 'No registra auto'}</small>
+                    </div>
+                    <button class="btn ${emp.adentro ? 'btn-success' : 'btn-primary'}" onclick="toggleCheckEmp(${emp.id})">
+                        <i class="fa-solid ${emp.adentro ? 'fa-square-check' : 'fa-square'}"></i> ${emp.adentro ? 'Dentro' : 'Marcar Entrada'}
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleCheckEmp(id) {
+            const emp = empleados.find(e => e.id === id);
+            if(emp) {
+                emp.adentro = !emp.adentro;
+                filterEmpleados();
+            }
+        }
+
+        // --- VISTA VISITANTES ---
+        function toggleAutoVisitante(val) {
+            document.getElementById('v-auto-fields').classList.toggle('hidden', val !== 'Sí');
+        }
+
+        function saveVisitante(e) {
+            e.preventDefault();
+            const nuevoVis = {
+                id: Date.now(),
+                nombre: document.getElementById('v-nombre').value,
+                asunto: document.getElementById('v-asunto').value,
+                identificacion: document.getElementById('v-identificacion').value,
+                traeAuto: document.getElementById('v-trae-auto').value,
+                modelo: document.getElementById('v-modelo').value,
+                color: document.getElementById('v-color').value,
+                placas: document.getElementById('v-placas').value,
+                adentro: true
+            };
+            visitantes.push(nuevoVis);
+            alert('¡Registro de visitante exitoso!');
+            e.target.reset();
+            toggleAutoVisitante('No');
+            logout();
+        }
+
+        // --- VISTA RECURSOS HUMANOS ---
+        function renderRH() {
+            const tbody = document.getElementById('rh-table-body');
+            tbody.innerHTML = '';
+            empleados.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${e.nombre}</strong></td>
+                    <td>${e.org}</td>
+                    <td>${e.puesto}</td>
+                    <td>${e.edificio} - ${e.piso}</td>
+                    <td>${e.tieneAuto === 'Sí' ? `${e.modelo} (${e.placas})` : 'Sin auto'}</td>
+                    <td>
+                        <button class="btn btn-primary" style="padding:4px 8px;" onclick="editEmp(${e.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteEmp(${e.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openEmpModal() {
+            document.getElementById('emp-id').value = '';
+            document.getElementById('emp-modal-title').innerText = 'Agregar Empleado';
+            document.getElementById('form-emp-nombre').value = '';
+            document.getElementById('form-emp-puesto').value = '';
+            document.getElementById('form-emp-piso').value = '';
+            document.getElementById('form-emp-tiene-auto').value = 'No';
+            toggleAutoEmpForm('No');
+
+            const selectOrg = document.getElementById('form-emp-org');
+            selectOrg.innerHTML = '';
+            organizaciones.forEach(o => selectOrg.innerHTML += `<option value="${o}">${o}</option>`);
+
+            document.getElementById('modal-emp').classList.remove('hidden');
+        }
+
+        function closeEmpModal() { document.getElementById('modal-emp').classList.add('hidden'); }
+
+        function toggleAutoEmpForm(val) { document.getElementById('form-emp-auto-fields').classList.toggle('hidden', val !== 'Sí'); }
+
+        function editEmp(id) {
+            const emp = empleados.find(e => e.id === id);
+            if(!emp) return;
+            openEmpModal();
+            document.getElementById('emp-id').value = emp.id;
+            document.getElementById('emp-modal-title').innerText = 'Editar Empleado';
+            document.getElementById('form-emp-nombre').value = emp.nombre;
+            document.getElementById('form-emp-org').value = emp.org;
+            document.getElementById('form-emp-puesto').value = emp.puesto;
+            document.getElementById('form-emp-edificio').value = emp.edificio;
+            document.getElementById('form-emp-piso').value = emp.piso;
+            document.getElementById('form-emp-tiene-auto').value = emp.tieneAuto;
+            toggleAutoEmpForm(emp.tieneAuto);
+            document.getElementById('form-emp-modelo').value = emp.modelo;
+            document.getElementById('form-emp-color').value = emp.color;
+            document.getElementById('form-emp-placas').value = emp.placas;
+        }
+
+        function deleteEmp(id) {
+            if(confirm('¿Desea dar de baja a este empleado?')) {
+                empleados = empleados.filter(e => e.id !== id);
+                renderRH();
+            }
+        }
+
+        function saveEmpleadoForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('emp-id').value;
+            const empData = {
+                id: id ? parseInt(id) : Date.now(),
+                nombre: document.getElementById('form-emp-nombre').value,
+                org: document.getElementById('form-emp-org').value,
+                puesto: document.getElementById('form-emp-puesto').value,
+                edificio: document.getElementById('form-emp-edificio').value,
+                piso: document.getElementById('form-emp-piso').value,
+                tieneAuto: document.getElementById('form-emp-tiene-auto').value,
+                modelo: document.getElementById('form-emp-modelo').value,
+                color: document.getElementById('form-emp-color').value,
+                placas: document.getElementById('form-emp-placas').value,
+                adentro: false
+            };
+
+            if(id) {
+                const idx = empleados.findIndex(e => e.id === parseInt(id));
+                empleados[idx] = empData;
+            } else {
+                empleados.push(empData);
+            }
+            closeEmpModal();
+            renderRH();
+        }
+
+        // --- DASHBOARD DE RECEPCIÓN / AFORO ---
+        function dashNav(panelKey, el) {
+            document.querySelectorAll('.menu-sub li').forEach(li => li.classList.remove('active'));
+            el.classList.add('active');
+
+            if (panelKey === 'aforo') {
+                document.getElementById('dash-aforo').classList.remove('hidden');
+                document.getElementById('dash-generic').classList.add('hidden');
+                renderAforo();
+            } else {
+                document.getElementById('dash-aforo').classList.add('hidden');
+                document.getElementById('dash-generic').classList.remove('hidden');
+                renderGenericPanel(panelKey, el.innerText);
+            }
+        }
+
+        function renderAforo() {
+            const empAdentro = empleados.filter(e => e.adentro);
+            const visAdentro = visitantes.filter(v => v.adentro);
+
+            document.getElementById('metric-emp').innerText = empAdentro.length;
+            document.getElementById('metric-vis').innerText = visAdentro.length;
+            document.getElementById('metric-total').innerText = empAdentro.length + visAdentro.length;
+            
+            const autosTotal = empAdentro.filter(e => e.tieneAuto === 'Sí').length + visAdentro.filter(v => v.traeAuto === 'Sí').length;
+            document.getElementById('metric-auto').innerText = autosTotal;
+
+            const tbody = document.getElementById('aforo-table-body');
+            tbody.innerHTML = '';
+
+            empAdentro.forEach(e => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:10px; font-weight:bold;">Empleado</span></td>
+                        <td>${e.nombre}</td>
+                        <td>${e.org} (${e.puesto})</td>
+                        <td>${e.edificio} - ${e.piso}</td>
+                        <td>${e.tieneAuto === 'Sí' ? `${e.modelo} (${e.placas})` : 'N/A'}</td>
+                    </tr>
+                `;
+            });
+
+            visAdentro.forEach(v => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:10px; font-weight:bold;">Visitante</span></td>
+                        <td>${v.nombre}</td>
+                        <td>Asunto: ${v.asunto}</td>
+                        <td>Acceso Principal</td>
+                        <td>${v.traeAuto === 'Sí' ? `${v.modelo} (${v.placas})` : 'N/A'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportarPDF() {
+            window.print();
+        }
+
+        // PANEL GENÉRICO DINÁMICO PARA FORMULARIOS SOLICITADOS
+        function renderGenericPanel(key, title) {
+            document.getElementById('dash-title').innerText = title;
+            const container = document.getElementById('dash-body');
+            
+            // Render de campos adaptados a la solicitud
+            container.innerHTML = `
+                <form onsubmit="event.preventDefault(); alert('Registro de ${title} guardado con éxito.');">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre / Folio / Título</label>
+                            <input type="text" required placeholder="Ingrese datos para ${title}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha y Hora</label>
+                            <input type="datetime-local" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>Observaciones / Detalles</label>
+                        <textarea style="padding:8px; border:1px solid #cbd5e1; border-radius:6px;" rows="3" placeholder="Escriba aquí los detalles..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Registro</button>
+                </form>
+            `;
+        }
+    </script>
+</body>
+</html>
