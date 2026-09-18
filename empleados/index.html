@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Empleados - CEMEFI</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #eef2f5; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #003366; color: white; padding: 20px; text-align: center; }
+        .body-content { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #333; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .info-card { background: #eef5fc; border-left: 4px solid #003366; padding: 15px; border-radius: 6px; margin-top: 15px; }
+        .info-card p { margin-bottom: 8px; font-size: 14px; }
+        .btn-confirm { width: 100%; background: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>Acceso de Personal</h2>
+        <p>Búsqueda e Identificación de Empleado</p>
+    </div>
+    <div class="body-content">
+        <div class="form-group">
+            <label>1. Selecciona tu Organización:</label>
+            <select id="empOrg">
+                <option value="">-- Seleccionar --</option>
+                <option value="CEMEFI">CEMEFI</option>
+                <option value="Aliarse">Aliarse</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>2. Escribe tu Nombre:</label>
+            <input type="text" id="empSearch" placeholder="Empieza a escribir..." oninput="searchEmployee()">
+        </div>
+
+        <!-- Tarjeta con Datos Precargados por RH -->
+        <div id="empCard" class="info-card hidden">
+            <p><strong>Empleado:</strong> <span id="empNombre">Carlos Mendoza</span></p>
+            <p><strong>Organización:</strong> <span id="empOrgText">CEMEFI</span></p>
+            <p><strong>Correo:</strong> carlos.mendoza@cemefi.org</p>
+            <p><strong>Estatus RH:</strong> <span style="color:green; font-weight:bold;">Activo</span></p>
+            <p><strong>Vehículo Registrado:</strong> Honda Civic (Placas: ABC-123)</p>
+            <button class="btn-confirm" onclick="alert(' Acceso Registrado Exitosamente')">Confirmar Entrada / Salida</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchEmployee() {
+        const query = document.getElementById('empSearch').value;
+        const card = document.getElementById('empCard');
+        if(query.length >= 3) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

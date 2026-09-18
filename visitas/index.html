@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Visitantes - CEMEFI</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #0056b3; color: white; padding: 20px; text-align: center; }
+        .body-content { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .btn-submit { width: 100%; background: #0056b3; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>Registro de Visitantes</h2>
+        <p>Complete sus datos para ingresar</p>
+    </div>
+    <div class="body-content">
+        <form onsubmit="event.preventDefault(); alert('Registro de visita completo.');">
+            <div class="form-group">
+                <label>Nombre Completo:</label>
+                <input type="text" required placeholder="Ej. Juan Pérez">
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Visita:</label>
+                <select id="tipoVisita" onchange="checkTipoVisita()" required>
+                    <option value="">-- Seleccionar --</option>
+                    <option value="servicio_social">Servicio Social</option>
+                    <option value="proveedores">Proveedores</option>
+                    <option value="visita_empleado">Visita Empleado</option>
+                    <option value="renta_sala">Renta de Sala</option>
+                    <option value="evento">Evento</option>
+                </select>
+            </div>
+
+            <!-- Campo Condicional: Solo Eventos -->
+            <div id="groupEvento" class="form-group hidden">
+                <label>Selecciona el Evento Disponible:</label>
+                <select>
+                    <option value="">-- Eventos programados para hoy --</option>
+                    <option value="1">Foro Anual de Responsabilidad Social</option>
+                    <option value="2">Taller de Capacitación ONG</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Organización / Empresa a la que pertenece o visita:</label>
+                <select required>
+                    <option value="">-- Seleccionar --</option>
+                    <option value="CEMEFI">CEMEFI</option>
+                    <option value="Aliarse">Aliarse</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico (para notificaciones de salida):</label>
+                <input type="email" required placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="form-group">
+                <label>Identificación Oficial:</label>
+                <select required>
+                    <option value="INE">INE</option>
+                    <option value="Credencial Escolar">Credencial Escolar</option>
+                    <option value="Licencia">Licencia de Conducir</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>¿Trae Vehículo?</label>
+                <select id="hasVehicle" onchange="checkVehicle()">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                </select>
+            </div>
+
+            <!-- Campos Condicionales de Vehículo -->
+            <div id="groupVehicle" class="hidden">
+                <div class="form-group"><input type="text" placeholder="Placas"></div>
+                <div class="form-group"><input type="text" placeholder="Modelo"></div>
+                <div class="form-group"><input type="text" placeholder="Color"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">Generar Registro</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function checkTipoVisita() {
+        const val = document.getElementById('tipoVisita').value;
+        const group = document.getElementById('groupEvento');
+        val === 'evento' ? group.classList.remove('hidden') : group.classList.add('hidden');
+    }
+
+    function checkVehicle() {
+        const val = document.getElementById('hasVehicle').value;
+        const group = document.getElementById('groupVehicle');
+        val === 'si' ? group.classList.remove('hidden') : group.classList.add('hidden');
+    }
+</script>
+</body>
+</html>
