@@ -3,111 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Visitantes - CEMEFI</title>
+    <title>Registro de Visitantes - CEMEFI</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6f9; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #0056b3; color: white; padding: 20px; text-align: center; }
-        .body-content { padding: 20px; }
+        body { background-color: #f3f3f9; color: #495057; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .card { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .card h2 { color: #2a3042; margin-bottom: 5px; text-align: center; font-size: 22px; }
+        .card p.subtitle { text-align: center; font-size: 13px; color: #74788d; margin-bottom: 25px; }
+
+        .section-title { font-size: 14px; font-weight: 700; color: #00a884; margin-top: 20px; margin-bottom: 12px; border-bottom: 2px solid #e9ecef; padding-bottom: 5px; text-transform: uppercase; }
+
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #333; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .btn-submit { width: 100%; background: #0056b3; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #495057; }
+        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #00a884; }
+        textarea { resize: vertical; min-height: 80px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+        .transport-fields { display: none; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px dashed #ced4da; margin-top: 10px; }
+        .transport-fields.active { display: block; }
+
+        .btn-submit { width: 100%; background: #00a884; color: white; border: none; padding: 12px; font-size: 14px; font-weight: 700; border-radius: 6px; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
+        .btn-submit:hover { background: #008f70; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h2>Registro de Visitantes</h2>
-        <p>Complete sus datos para ingresar</p>
-    </div>
-    <div class="body-content">
-        <form onsubmit="event.preventDefault(); alert('Registro de visita completo.');">
+    <div class="card">
+        <h2>Registro de Entrada de Visitantes</h2>
+        <p class="subtitle">Complete los campos para autorizar su ingreso a las instalaciones</p>
+
+        <form onsubmit="event.preventDefault(); registrarVisita();">
+            
+            <div class="section-title">1. Datos Personales</div>
             <div class="form-group">
-                <label>Nombre Completo:</label>
-                <input type="text" required placeholder="Ej. Juan Pérez">
+                <label>Nombre Completo *</label>
+                <input type="text" id="visNombre" required placeholder="Ej. Ana María Gómez">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="visCorreo" required placeholder="correo@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono de Contacto</label>
+                    <input type="tel" id="visTelefono" placeholder="55 0000 0000">
+                </div>
             </div>
 
+            <div class="section-title">2. Datos de la Visita</div>
             <div class="form-group">
-                <label>Tipo de Visita:</label>
-                <select id="tipoVisita" onchange="checkTipoVisita()" required>
-                    <option value="">-- Seleccionar --</option>
-                    <option value="servicio_social">Servicio Social</option>
-                    <option value="proveedores">Proveedores</option>
-                    <option value="visita_empleado">Visita Empleado</option>
-                    <option value="renta_sala">Renta de Sala</option>
-                    <option value="evento">Evento</option>
+                <label>Organización / Empresa a la que Pertenece o Visita *</label>
+                <input type="text" id="visEmpresa" required placeholder="Ej. Fundación Mexicana / CEMEFI / Empresa X">
+            </div>
+            <div class="form-group">
+                <label>Descripción / Motivo de la Visita *</label>
+                <textarea id="visDescripcion" required placeholder="Describa brevemente a qué va a la empresa o con quién tiene cita..."></textarea>
+            </div>
+
+            <div class="section-title">3. Medio de Transporte</div>
+            <div class="form-group">
+                <label>¿Cómo Ingresa a las Instalaciones? *</label>
+                <select id="tipoTransporte" onchange="actualizarCamposTransporte()" required>
+                    <option value="ninguno">A pie / Sin vehículo</option>
+                    <option value="vehiculo">Vehículo (Automóvil / Camioneta)</option>
+                    <option value="moto">Motocicleta</option>
+                    <option value="bicicleta">Bicicleta</option>
+                    <option value="escuter">Escúter / Scooter</option>
                 </select>
             </div>
 
-            <!-- Campo Condicional: Solo Eventos -->
-            <div id="groupEvento" class="form-group hidden">
-                <label>Selecciona el Evento Disponible:</label>
-                <select>
-                    <option value="">-- Eventos programados para hoy --</option>
-                    <option value="1">Foro Anual de Responsabilidad Social</option>
-                    <option value="2">Taller de Capacitación ONG</option>
-                </select>
+            <!-- CAMPOS DINÁMICOS VEHÍCULO -->
+            <div id="fieldsVehiculo" class="transport-fields">
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Placas *</label>
+                        <input type="text" id="vehPlacas" placeholder="ABC-123-A">
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo *</label>
+                        <input type="text" id="vehModelo" placeholder="Ej. Civic / Versa">
+                    </div>
+                    <div class="form-group">
+                        <label>Color *</label>
+                        <input type="text" id="vehColor" placeholder="Ej. Gris / Blanco">
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Organización / Empresa a la que pertenece o visita:</label>
-                <select required>
-                    <option value="">-- Seleccionar --</option>
-                    <option value="CEMEFI">CEMEFI</option>
-                    <option value="Aliarse">Aliarse</option>
-                </select>
+            <!-- CAMPOS DINÁMICOS MOTOCICLETA -->
+            <div id="fieldsMoto" class="transport-fields">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Placas *</label>
+                        <input type="text" id="motoPlacas" placeholder="12ABC3">
+                    </div>
+                    <div class="form-group">
+                        <label>Marca *</label>
+                        <input type="text" id="motoMarca" placeholder="Ej. Italika / Yamaha">
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Correo Electrónico (para notificaciones de salida):</label>
-                <input type="email" required placeholder="correo@ejemplo.com">
-            </div>
-
-            <div class="form-group">
-                <label>Identificación Oficial:</label>
-                <select required>
-                    <option value="INE">INE</option>
-                    <option value="Credencial Escolar">Credencial Escolar</option>
-                    <option value="Licencia">Licencia de Conducir</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>¿Trae Vehículo?</label>
-                <select id="hasVehicle" onchange="checkVehicle()">
-                    <option value="no">No</option>
-                    <option value="si">Sí</option>
-                </select>
-            </div>
-
-            <!-- Campos Condicionales de Vehículo -->
-            <div id="groupVehicle" class="hidden">
-                <div class="form-group"><input type="text" placeholder="Placas"></div>
-                <div class="form-group"><input type="text" placeholder="Modelo"></div>
-                <div class="form-group"><input type="text" placeholder="Color"></div>
-            </div>
-
-            <button type="submit" class="btn-submit">Generar Registro</button>
+            <button type="submit" class="btn-submit">Registrar Visita</button>
         </form>
     </div>
-</div>
 
-<script>
-    function checkTipoVisita() {
-        const val = document.getElementById('tipoVisita').value;
-        const group = document.getElementById('groupEvento');
-        val === 'evento' ? group.classList.remove('hidden') : group.classList.add('hidden');
-    }
+    <script>
+        function actualizarCamposTransporte() {
+            const tipo = document.getElementById('tipoTransporte').value;
+            
+            // Ocultar todos los contenedores opcionales
+            document.getElementById('fieldsVehiculo').classList.remove('active');
+            document.getElementById('fieldsMoto').classList.remove('active');
 
-    function checkVehicle() {
-        const val = document.getElementById('hasVehicle').value;
-        const group = document.getElementById('groupVehicle');
-        val === 'si' ? group.classList.remove('hidden') : group.classList.add('hidden');
-    }
-</script>
+            // Quitar requeridos
+            document.getElementById('vehPlacas').required = false;
+            document.getElementById('vehModelo').required = false;
+            document.getElementById('vehColor').required = false;
+            document.getElementById('motoPlacas').required = false;
+            document.getElementById('motoMarca').required = false;
+
+            if (tipo === 'vehiculo') {
+                document.getElementById('fieldsVehiculo').classList.add('active');
+                document.getElementById('vehPlacas').required = true;
+                document.getElementById('vehModelo').required = true;
+                document.getElementById('vehColor').required = true;
+            } else if (tipo === 'moto') {
+                document.getElementById('fieldsMoto').classList.add('active');
+                document.getElementById('motoPlacas').required = true;
+                document.getElementById('motoMarca').required = true;
+            }
+        }
+
+        function registrarVisita() {
+            alert('¡Registro de visitante exitoso! Pase a recepción/vigilancia para su acceso.');
+            location.reload();
+        }
+    </script>
 </body>
 </html>

@@ -3,54 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Administrador - CEMEFI</title>
+    <title>Panel Unificado Administrador - CEMEFI</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f3f3f9; color: #495057; min-height: 100vh; }
         
-        /* 1. PANTALLA LOGIN */
+        /* LOGIN */
         .login-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2a3042; display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-card { background: white; padding: 35px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .login-card { background: white; padding: 35px; border-radius: 10px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .login-card h2 { color: #2a3042; text-align: center; margin-bottom: 20px; font-weight: 700; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #495057; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 13px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 13px; }
         .btn-primary { width: 100%; background: #00a884; color: white; border: none; padding: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; transition: 0.3s; }
         .btn-primary:hover { background: #008f70; }
 
-        /* 2. LAYOUT PRINCIPAL */
+        /* LAYOUT MAIN */
         .app-container { display: flex; width: 100%; min-height: 100vh; }
-        
-        /* BARRA LATERAL (SIDEBAR) */
-        .sidebar { width: 240px; background: #2a3042; color: #a6b0cf; flex-shrink: 0; display: flex; flex-direction: column; }
+        .sidebar { width: 250px; background: #2a3042; color: #a6b0cf; flex-shrink: 0; display: flex; flex-direction: column; }
         .brand { padding: 20px; color: white; font-size: 18px; font-weight: bold; border-bottom: 1px solid #32394e; }
         .menu-title { font-size: 11px; text-transform: uppercase; padding: 15px 20px 5px; color: #6a7187; font-weight: 600; }
         .nav-list { list-style: none; }
         .nav-item { padding: 12px 20px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .nav-item:hover, .nav-item.active { background: #32394e; color: white; border-left: 3px solid #00a884; }
 
-        /* ÁREA DE CONTENIDO */
         main { flex-grow: 1; background: #f3f3f9; padding: 25px; overflow-y: auto; }
-        
-        /* CABECERA DE USUARIO */
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .welcome-title h1 { font-size: 20px; color: #495057; font-weight: 600; }
         .welcome-title p { font-size: 13px; color: #74788d; }
         .header-actions { display: flex; gap: 10px; align-items: center; }
         .date-badge { background: white; padding: 8px 15px; border-radius: 5px; border: 1px solid #e9ecef; font-size: 12px; }
 
-        /* TARJETAS MÉTRICAS (KPIS) */
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .kpi-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .kpi-title { font-size: 12px; font-weight: 600; color: #74788d; text-transform: uppercase; display: flex; justify-content: space-between; }
         .kpi-value { font-size: 24px; font-weight: 700; color: #495057; margin: 10px 0 5px; }
-        .kpi-badge { font-size: 11px; font-weight: bold; }
-        .badge-up { color: #34c38f; }
-        .badge-down { color: #f46a6a; }
 
-        /* VISTAS Y TABLAS */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .content-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .content-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 25px; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f6f6f6; }
         .card-header h3 { font-size: 14px; font-weight: 600; color: #495057; text-transform: uppercase; }
 
@@ -60,29 +49,27 @@
         
         .badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
         .badge-active { background: #d4edda; color: #155724; }
-        .badge-inactive { background: #f8d7da; color: #721c24; }
-        
-        .btn-sm { padding: 5px 8px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; color: white; margin-right: 3px; }
+        .badge-alert { background: #fff3cd; color: #856404; }
+
+        .btn-sm { padding: 5px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; color: white; margin-right: 3px; }
         .btn-edit { background: #556ee6; }
-        .btn-delete { background: #f46a6a; }
+        .btn-send { background: #34c38f; }
         .btn-alert { background: #f1b44c; color: #212529; font-weight: bold; }
 
-        /* CONTROL DE PANELES Y ROLES */
         .view-panel { display: none; }
         .view-panel.active-panel { display: block; }
         .nav-role { display: none; }
 
-        /* MODALES */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 100%; max-width: 480px; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 100%; max-width: 500px; }
     </style>
 </head>
 <body>
 
-    <!-- 1. FORMULARIO DE LOGIN UNIFICADO -->
+    <!-- 1. LOGIN UNIFICADO CON CREDENCIALES DINÁMICAS -->
     <div id="loginSection" class="login-wrapper">
         <div class="login-card">
-            <h2>Acceso Administrativo</h2>
+            <h2>Acceso al Sistema</h2>
             <form onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
                     <label>Correo Electrónico:</label>
@@ -94,39 +81,36 @@
                 </div>
                 <button type="submit" class="btn-primary">Iniciar Sesión</button>
             </form>
-            <p style="font-size:11px; color:#666; margin-top:15px; text-align:center;">
-                <strong>Credenciales de Prueba:</strong><br>
-                Admin: <code>admin@cemefi.org</code> / <code>Admin2026!</code><br>
-                RH: <code>rh@cemefi.org</code> / <code>RHpass2026!</code><br>
-                Recepción: <code>recepcion@cemefi.org</code> / <code>Recep2026!</code><br>
-                Vigilancia: <code>vigilancia@cemefi.org</code> / <code>Vigil2026!</code>
-            </p>
+            <div style="font-size:10px; color:#666; margin-top:15px; text-align:center;">
+                <strong>Credenciales Predeterminadas:</strong><br>
+                Admin: admin@cemefi.org | Admin2026!<br>
+                RH: rh@cemefi.org | RHpass2026!<br>
+                Recepción: recepcion@cemefi.org | Recep2026!<br>
+                Vigilancia: vigilancia@cemefi.org | Vigil2026!
+            </div>
         </div>
     </div>
 
-    <!-- 2. APPLICACIÓN DASHBOARD -->
+    <!-- 2. LAYOUT DASHBOARD -->
     <div id="appLayout" class="app-container" style="display:none;">
         
-        <!-- NAVEGACIÓN LATERAL -->
         <aside class="sidebar">
             <div class="brand">CEMEFI Panel</div>
             <div class="menu-title">Menú Principal</div>
             <ul class="nav-list">
                 <li class="nav-item active" id="nav-dash" onclick="switchView('dashboardView', this)">📊 Dashboard Global</li>
-                <li class="nav-item nav-role role-admin" id="nav-users" onclick="switchView('usersView', this)">👥 Usuarios y Permisos</li>
+                <li class="nav-item nav-role role-admin" id="nav-users" onclick="switchView('usersView', this)">🔐 Credenciales e Inicios de Sesión</li>
                 <li class="nav-item nav-role role-admin role-rh" id="nav-rh" onclick="switchView('rhView', this)">👔 Recursos Humanos</li>
-                <li class="nav-item nav-role role-admin role-rec" id="nav-rec" onclick="switchView('recView', this)">🏢 Recepción / Salas</li>
-                <li class="nav-item nav-role role-admin role-vig" id="nav-vig" onclick="switchView('vigView', this)">🛡️ Vigilancia / Bitácora</li>
+                <li class="nav-item nav-role role-admin role-rec" id="nav-rec" onclick="switchView('recView', this)">🏢 Recepción / Salas y Eventos</li>
+                <li class="nav-item nav-role role-admin role-vig" id="nav-vig" onclick="switchView('vigView', this)">🛡️ Vigilancia / Bitácora y Eventos</li>
             </ul>
         </aside>
 
-        <!-- PANEL DE CONTENIDO -->
         <main>
-            <!-- CABECERA SUPERIOR CON SALUDO DE USUARIO -->
             <div class="top-header">
                 <div class="welcome-title">
                     <h1 id="welcomeUser">Hola Usuario</h1>
-                    <p>Resumen general de las instalaciones en tiempo real.</p>
+                    <p>Panel unificado de control CEMEFI</p>
                 </div>
                 <div class="header-actions">
                     <div class="date-badge">21 Sep, 2026</div>
@@ -134,91 +118,41 @@
                 </div>
             </div>
 
-            <!-- VISTA 1: DASHBOARD GENERAL -->
+            <!-- VISTA 1: DASHBOARD GLOBAL -->
             <div id="dashboardView" class="view-panel active-panel">
                 <div class="kpi-grid">
                     <div class="kpi-card">
-                        <div class="kpi-title">Total de Personas <span class="kpi-badge badge-up">+16.24%</span></div>
+                        <div class="kpi-title">Total Personas Hoy</div>
                         <div class="kpi-value">559</div>
-                        <span style="font-size:11px; color:#556ee6;">Ingresos hoy</span>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-title">Total de Autos <span class="kpi-badge badge-down">-3.57%</span></div>
+                        <div class="kpi-title">Vehículos Ingresados</div>
                         <div class="kpi-value">89</div>
-                        <span style="font-size:11px; color:#556ee6;">Estacionamiento</span>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-title">Total de Empleados <span class="kpi-badge badge-up">+29.08%</span></div>
+                        <div class="kpi-title">Empleados Activos</div>
                         <div class="kpi-value">183</div>
-                        <span style="font-size:11px; color:#556ee6;">Activos dentro</span>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-title">Total de Visitantes <span class="kpi-badge badge-up">+0.00%</span></div>
-                        <div class="kpi-value">165</div>
-                        <span style="font-size:11px; color:#556ee6;">En instalaciones</span>
+                        <div class="kpi-title">Eventos Programados</div>
+                        <div class="kpi-value" id="countEventos">2</div>
                     </div>
-                </div>
-
-                <div class="dashboard-grid">
-                    <div class="content-card">
-                        <div class="card-header">
-                            <h3>Últimos Ingresos Personas</h3>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr><th>Nombre</th><th>Tipo</th><th>Hora</th><th>Estatus</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Carlos Mendoza</td><td>Empleado</td><td>08:30 AM</td><td><span class="badge badge-active">Dentro</span></td></tr>
-                                <tr><td>Ana Gutiérrez</td><td>Empleado</td><td>08:42 AM</td><td><span class="badge badge-active">Dentro</span></td></tr>
-                                <tr><td>María López</td><td>Visitante</td><td>09:15 AM</td><td><span class="badge badge-active">Dentro</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="content-card">
-                        <div class="card-header">
-                            <h3>Últimos Ingresos Autos</h3>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr><th>Conductor</th><th>Placas</th><th>Modelo/Color</th><th>Hora</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Carlos Mendoza</td><td>ABC-123</td><td>Honda Civic Gris</td><td>08:30 AM</td></tr>
-                                <tr><td>María López</td><td>XYZ-987</td><td>Nissan Versa Blanco</td><td>09:15 AM</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="content-card">
-                    <div class="card-header">
-                        <h3>Incidencias Reportadas</h3>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>Fecha/Hora</th><th>Lugar</th><th>Descripción</th><th>Reporta</th><th>Estatus</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>21 Sep 2026 - 09:00 AM</td><td>Estacionamiento B</td><td>Vehículo mal estacionado interfería el paso</td><td>Vigilancia</td><td><span class="badge badge-inactive">Pendiente</span></td></tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
-            <!-- VISTA 2: GESTIÓN DE USUARIOS Y PERMISOS (Super Admin) -->
+            <!-- VISTA 2: GESTIÓN DE CREDENCIALES (SUPER ADMIN) -->
             <div id="usersView" class="view-panel">
                 <div class="content-card">
                     <div class="card-header">
-                        <h3>Creación de Usuarios y Asignación de Permisos</h3>
-                        <button class="btn-primary" style="width:auto;" onclick="openModal('modalUsuario')">+ Crear Usuario</button>
+                        <h3>Gestión de Credenciales de Inicio de Sesión</h3>
+                        <button class="btn-primary" style="width:auto;" onclick="openModal('modalNuevaCredencial')">+ Agregar Nueva Credencial</button>
                     </div>
                     <table>
-                        <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Permisos</th><th>Acciones</th></tr></thead>
-                        <tbody>
-                            <tr><td>Super Admin (Tú)</td><td>admin@cemefi.org</td><td>Administrador</td><td>Control Total (Alta, Baja, Edición)</td><td><button class="btn-sm btn-edit">Editar</button></td></tr>
-                            <tr><td>Jefe de Área</td><td>jefe@cemefi.org</td><td>Director</td><td>Lectura y Modificación</td><td><button class="btn-sm btn-edit">Editar</button></td></tr>
+                        <thead>
+                            <tr><th>Nombre / Usuario</th><th>Correo Electrónico</th><th>Contraseña</th><th>Rol</th><th>Estatus</th></tr>
+                        </thead>
+                        <tbody id="tablaCredenciales">
+                            <!-- Se renderizan dinámicamente -->
                         </tbody>
                     </table>
                 </div>
@@ -228,49 +162,55 @@
             <div id="rhView" class="view-panel">
                 <div class="content-card">
                     <div class="card-header">
-                        <h3>Módulo Recursos Humanos (Alta / Baja Empleados)</h3>
-                        <button class="btn-primary" style="width:auto;" onclick="openModal('modalEmpleado')">+ Nuevo Empleado</button>
+                        <h3>Administración de Personal (RH)</h3>
                     </div>
                     <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Organización</th><th>Estatus</th><th>Acciones</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Organización</th><th>Acciones</th></tr></thead>
                         <tbody>
-                            <tr><td>EMP-01</td><td>Carlos Mendoza</td><td>carlos.mendoza@cemefi.org</td><td>CEMEFI</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-sm btn-edit">Editar</button><button class="btn-sm btn-delete" onclick="alert('Empleado dado de baja')">Dar de Baja</button></td></tr>
+                            <tr><td>EMP-01</td><td>Carlos Mendoza</td><td>carlos.mendoza@cemefi.org</td><td>CEMEFI</td><td><button class="btn-sm btn-edit">Editar</button></td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VISTA 4: RECEPCIÓN Y SALAS -->
+            <!-- VISTA 4: RECEPCIÓN (Renta de Salas y Programación de Eventos) -->
             <div id="recView" class="view-panel">
                 <div class="content-card">
                     <div class="card-header">
-                        <h3>Módulo Recepción (Renta de Salas y Alertas)</h3>
-                        <button class="btn-primary" style="width:auto;" onclick="openModal('modalRenta')">+ Nueva Renta</button>
-                    </div>
-                    <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-                        <strong>Aforo Actual en Tiempo Real: 38 Personas</strong>
-                        <button class="btn-sm" style="background:#34c38f;" onclick="alert('Descargando PDF de Aforo...')">📄 Descargar PDF Aforo</button>
+                        <h3>Gestión de Salas y Envío de Eventos a Vigilancia</h3>
+                        <button class="btn-primary" style="width:auto;" onclick="openModal('modalNuevoEvento')">+ Crear Nuevo Evento y Lista</button>
                     </div>
                     <table>
-                        <thead><tr><th>Sala</th><th>Evento/Empresa</th><th>Correo Contacto</th><th>Horario</th><th>Hora Término</th><th>Acción Alerta</th></tr></thead>
-                        <tbody>
-                            <tr><td>Sala A (Piso 2)</td><td>Reunión Aliarse</td><td>contacto@empresa.com</td><td>10:00 - 12:00</td><td>12:00 PM</td><td><button class="btn-sm btn-alert" onclick="sendWarning('contacto@empresa.com')">⚠️ Enviar Alerta 15 Min</button></td></tr>
+                        <thead>
+                            <tr><th>Evento</th><th>Sala</th><th>Horario</th><th>Lista de Asistentes</th><th>Acción</th></tr>
+                        </thead>
+                        <tbody id="tablaEventosRecepcion">
+                            <!-- Render dinámico -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VISTA 5: VIGILANCIA -->
+            <!-- VISTA 5: VIGILANCIA (Bitácora + Lista de Eventos del Día) -->
             <div id="vigView" class="view-panel">
                 <div class="content-card">
                     <div class="card-header">
-                        <h3>Bitácora General de Control de Accesos (Vigilancia)</h3>
+                        <h3>📋 Lista de Eventos y Asistentes Esperados Hoy (Recibidos de Recepción)</h3>
+                    </div>
+                    <div id="contenedorEventosVigilancia">
+                        <!-- Render dinámico enviado por recepción -->
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3>Bitácora Global de Accesos</h3>
                     </div>
                     <table>
-                        <thead><tr><th>Tipo</th><th>Nombre</th><th>Organización</th><th>Hora Entrada</th><th>Vehículo</th><th>Acciones</th></tr></thead>
+                        <thead><tr><th>Tipo</th><th>Nombre</th><th>Empresa/Visita</th><th>Transporte</th><th>Hora Entrada</th></tr></thead>
                         <tbody>
-                            <tr><td>Visitante</td><td>María López</td><td>Proveedor X</td><td>09:15 AM</td><td>Placas: XYZ-987</td><td><button class="btn-sm btn-edit">Editar</button></td></tr>
-                            <tr><td>Empleado</td><td>Carlos Mendoza</td><td>CEMEFI</td><td>08:30 AM</td><td>Placas: ABC-123</td><td><button class="btn-sm btn-edit">Editar</button></td></tr>
+                            <tr><td>Visitante</td><td>María López</td><td>Proveedor X</td><td>Auto (XYZ-987)</td><td>09:15 AM</td></tr>
+                            <tr><td>Empleado</td><td>Carlos Mendoza</td><td>CEMEFI</td><td>Auto (ABC-123)</td><td>08:30 AM</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -279,71 +219,73 @@
         </main>
     </div>
 
-    <!-- MODAL CREAR USUARIO -->
-    <div id="modalUsuario" class="modal">
+    <!-- MODAL: CREAR CREDENCIAL DE ACCESO (SUPER ADMIN) -->
+    <div id="modalNuevaCredencial" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom:15px;">Crear Usuario y Permisos</h3>
-            <form onsubmit="event.preventDefault(); closeModal('modalUsuario'); alert('Usuario Creado Exitosamente');">
-                <div class="form-group"><label>Nombre Completo:</label><input type="text" required></div>
-                <div class="form-group"><label>Correo Electrónico:</label><input type="email" required></div>
-                <div class="form-group"><label>Contraseña:</label><input type="password" required></div>
+            <h3 style="margin-bottom:15px;">Crear Nuevas Credenciales de Inicio de Sesión</h3>
+            <form onsubmit="event.preventDefault(); guardarCredencial();">
+                <div class="form-group"><label>Nombre del Usuario:</label><input type="text" id="credNombre" required placeholder="Ej. Juan Pérez"></div>
+                <div class="form-group"><label>Correo Electrónico:</label><input type="email" id="credCorreo" required placeholder="usuario@cemefi.org"></div>
+                <div class="form-group"><label>Contraseña:</label><input type="text" id="credPass" required placeholder="ClaveAcceso2026!"></div>
                 <div class="form-group">
-                    <label>Permisos Asignados:</label>
-                    <select><option>Solo Lectura</option><option>Lectura y Modificación</option><option>Control Total</option></select>
+                    <label>Rol de Sistema:</label>
+                    <select id="credRol" required>
+                        <option value="role-admin">Super Admin</option>
+                        <option value="role-rh">Recursos Humanos</option>
+                        <option value="role-rec">Recepción</option>
+                        <option value="role-vig">Vigilancia</option>
+                    </select>
                 </div>
-                <button type="submit" class="btn-primary">Guardar Usuario</button>
-                <button type="button" class="btn-primary" style="background:#74788d; margin-top:5px;" onclick="closeModal('modalUsuario')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar Credenciales</button>
+                <button type="button" class="btn-primary" style="background:#74788d; margin-top:5px;" onclick="closeModal('modalNuevaCredencial')">Cancelar</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL EMPLEADO (RH) -->
-    <div id="modalEmpleado" class="modal">
+    <!-- MODAL: REGISTRAR EVENTO Y LISTA DE ASISTENTES (RECEPCIÓN) -->
+    <div id="modalNuevoEvento" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom:15px;">Agregar Empleado</h3>
-            <form onsubmit="event.preventDefault(); closeModal('modalEmpleado'); alert('Empleado Guardado');">
-                <div class="form-group"><label>Nombre Completo:</label><input type="text" required></div>
-                <div class="form-group"><label>Correo Electrónico:</label><input type="email" required></div>
-                <div class="form-group"><label>Organización:</label><select><option>CEMEFI</option><option>Aliarse</option></select></div>
-                <button type="submit" class="btn-primary">Guardar Empleado</button>
-                <button type="button" class="btn-primary" style="background:#74788d; margin-top:5px;" onclick="closeModal('modalEmpleado')">Cancelar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL RENTA DE SALAS (RECEPCIÓN) -->
-    <div id="modalRenta" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-bottom:15px;">Nueva Renta de Sala</h3>
-            <form onsubmit="event.preventDefault(); closeModal('modalRenta'); alert('Reserva Registrada');">
-                <div class="form-group"><label>Sala:</label><select><option>Sala A (Piso 2)</option><option>Auditorio Principal</option></select></div>
-                <div class="form-group"><label>Nombre Evento / Empresa:</label><input type="text" required></div>
-                <div class="form-group"><label>Correo Notificación:</label><input type="email" required></div>
-                <div class="form-group"><label>Hora Desocupación:</label><input type="time" required></div>
-                <button type="submit" class="btn-primary">Registrar Renta</button>
-                <button type="button" class="btn-primary" style="background:#74788d; margin-top:5px;" onclick="closeModal('modalRenta')">Cancelar</button>
+            <h3 style="margin-bottom:15px;">Registrar Evento y Asistentes para Vigilancia</h3>
+            <form onsubmit="event.preventDefault(); guardarEvento();">
+                <div class="form-group"><label>Nombre del Evento:</label><input type="text" id="evNombre" required placeholder="Ej. Asamblea Anual Aliarse"></div>
+                <div class="form-group"><label>Sala Solicitada:</label><input type="text" id="evSala" required placeholder="Ej. Sala A - Piso 2"></div>
+                <div class="form-group"><label>Horario:</label><input type="text" id="evHorario" required placeholder="Ej. 10:00 AM - 02:00 PM"></div>
+                <div class="form-group">
+                    <label>Lista de Nombres de Asistentes (Un nombre por línea):</label>
+                    <textarea id="evAsistentes" rows="5" required placeholder="Pedro Ramírez&#10;Lucía Fernández&#10;Roberto Gómez"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Guardar Evento</button>
+                <button type="button" class="btn-primary" style="background:#74788d; margin-top:5px;" onclick="closeModal('modalNuevoEvento')">Cancelar</button>
             </form>
         </div>
     </div>
 
 <script>
+    // BASE DE DATOS LOCAL DE CREDENCIALES
+    let usuariosSistema = [
+        { nombre: 'Super Admin', correo: 'admin@cemefi.org', pass: 'Admin2026!', rol: 'role-admin', rolNombre: 'Super Admin' },
+        { nombre: 'RH Administrador', correo: 'rh@cemefi.org', pass: 'RHpass2026!', rol: 'role-rh', rolNombre: 'Recursos Humanos' },
+        { nombre: 'Recepción Central', correo: 'recepcion@cemefi.org', pass: 'Recep2026!', rol: 'role-rec', rolNombre: 'Recepción' },
+        { nombre: 'Caseta Vigilancia', correo: 'vigilancia@cemefi.org', pass: 'Vigil2026!', rol: 'role-vig', rolNombre: 'Vigilancia' }
+    ];
+
+    // BASE DE DATOS LOCAL DE EVENTOS
+    let eventos = [
+        { id: 1, nombre: 'Foro de Sostenibilidad', sala: 'Auditorio Principal', horario: '09:00 AM - 01:00 PM', asistentes: ['Gabriel Torres', 'Sofía Castillo', 'Daniel Morales'], enviadoVigilancia: true },
+        { id: 2, nombre: 'Reunión de Consejo Aliarse', sala: 'Sala A (Piso 2)', horario: '03:00 PM - 05:00 PM', asistentes: ['Fernando Ruiz', 'Patricia Vega'], enviadoVigilancia: false }
+    ];
+
     function handleLogin() {
         const email = document.getElementById('loginEmail').value.trim();
         const pass = document.getElementById('loginPass').value.trim();
 
-        // Ocultar todos los ítems de rol en el menú lateral
-        document.querySelectorAll('.nav-role').forEach(el => el.style.display = 'none');
+        const user = usuariosSistema.find(u => u.correo === email && u.pass === pass);
 
-        if (email === 'admin@cemefi.org' && pass === 'Admin2026!') {
-            initDashboard('Super Admin (Tú)', 'role-admin');
-        } else if (email === 'rh@cemefi.org' && pass === 'RHpass2026!') {
-            initDashboard('Recursos Humanos', 'role-rh');
-        } else if (email === 'recepcion@cemefi.org' && pass === 'Recep2026!') {
-            initDashboard('Recepción', 'role-rec');
-        } else if (email === 'vigilancia@cemefi.org' && pass === 'Vigil2026!') {
-            initDashboard('Vigilancia', 'role-vig');
+        if (user) {
+            document.querySelectorAll('.nav-role').forEach(el => el.style.display = 'none');
+            initDashboard(user.nombre, user.rol);
         } else {
-            alert('Credenciales incorrectas. Verifique el correo o la contraseña.');
+            alert('Credenciales incorrectas. Verifique el usuario o la contraseña.');
         }
     }
 
@@ -352,15 +294,115 @@
         document.getElementById('appLayout').style.display = 'flex';
         document.getElementById('welcomeUser').innerText = 'Hola ' + userName;
 
-        // Mostrar solo los elementos del menú autorizados para este rol
         if (roleClass === 'role-admin') {
             document.querySelectorAll('.nav-role').forEach(el => el.style.display = 'flex');
         } else {
             document.querySelectorAll('.' + roleClass).forEach(el => el.style.display = 'flex');
         }
 
-        // Cargar vista Dashboard principal por defecto
+        renderCredenciales();
+        renderEventos();
         switchView('dashboardView', document.getElementById('nav-dash'));
+    }
+
+    /* CREDENCIALES (SUPER ADMIN) */
+    function renderCredenciales() {
+        const tbody = document.getElementById('tablaCredenciales');
+        tbody.innerHTML = '';
+        usuariosSistema.forEach(u => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${u.nombre}</strong></td>
+                    <td>${u.correo}</td>
+                    <td><code>${u.pass}</code></td>
+                    <td>${u.rolNombre}</td>
+                    <td><span class="badge badge-active">Activo</span></td>
+                </tr>`;
+        });
+    }
+
+    function guardarCredencial() {
+        const nombre = document.getElementById('credNombre').value;
+        const correo = document.getElementById('credCorreo').value;
+        const pass = document.getElementById('credPass').value;
+        const rol = document.getElementById('credRol').value;
+        const rolNombre = document.getElementById('credRol').options[document.getElementById('credRol').selectedIndex].text;
+
+        usuariosSistema.push({ nombre, correo, pass, rol, rolNombre });
+        renderCredenciales();
+        closeModal('modalNuevaCredencial');
+        alert('Nuevas credenciales guardadas exitosamente. El usuario ya puede iniciar sesión.');
+    }
+
+    /* EVENTOS (RECEPCIÓN & VIGILANCIA) */
+    function renderEventos() {
+        const tbody = document.getElementById('tablaEventosRecepcion');
+        const containerVig = document.getElementById('contenedorEventosVigilancia');
+        
+        tbody.innerHTML = '';
+        containerVig.innerHTML = '';
+
+        document.getElementById('countEventos').innerText = eventos.length;
+
+        eventos.forEach((ev, index) => {
+            // Tabla Recepción
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${ev.nombre}</strong></td>
+                    <td>${ev.sala}</td>
+                    <td>${ev.horario}</td>
+                    <td>${ev.asistentes.length} Asistentes registrados</td>
+                    <td>
+                        ${ev.enviadoVigilancia ? 
+                            '<span class="badge badge-active">✓ Enviado a Vigilancia</span>' : 
+                            `<button class="btn-sm btn-send" onclick="enviarAVigilancia(${index})">📤 Enviar Lista a Vigilancia</button>`}
+                    </td>
+                </tr>`;
+
+            // Vista Vigilancia (solo eventos enviados)
+            if (ev.enviadoVigilancia) {
+                let listaHtml = ev.asistentes.map(a => `<li>👤 ${a}</li>`).join('');
+                containerVig.innerHTML += `
+                    <div style="background:#f8f9fa; border:1px solid #e9ecef; border-left:4px solid #00a884; padding:15px; border-radius:6px; margin-bottom:15px;">
+                        <h4 style="color:#2a3042;">${ev.nombre} - <span style="color:#00a884;">${ev.sala}</span></h4>
+                        <p style="font-size:12px; color:#74788d; margin-bottom:10px;">Horario: ${ev.horario}</p>
+                        <strong>Lista de Nombres de Asistentes:</strong>
+                        <ul style="margin-left:20px; font-size:12px; margin-top:5px;">${listaHtml}</ul>
+                    </div>`;
+            }
+        });
+
+        if (containerVig.innerHTML === '') {
+            containerVig.innerHTML = '<p style="font-size:12px; color:#999;">No hay listas de eventos enviadas por recepción el día de hoy.</p>';
+        }
+    }
+
+    function guardarEvento() {
+        const nombre = document.getElementById('evNombre').value;
+        const sala = document.getElementById('evSala').value;
+        const horario = document.getElementById('evHorario').value;
+        const asistentesRaw = document.getElementById('evAsistentes').value;
+
+        const asistentes = asistentesRaw.split('\n').map(a => a.trim()).filter(a => a.length > 0);
+
+        eventos.push({
+            id: eventos.length + 1,
+            nombre,
+            sala,
+            horario,
+            asistentes,
+            enviadoVigilancia: false
+        });
+
+        renderEventos();
+        closeModal('modalNuevoEvento');
+        alert('Evento creado correctamente en Recepción.');
+    }
+
+    function enviarAVigilancia(index) {
+        eventos[index].enviadoVigilancia = true;
+        renderEventos();
+        alert('La lista de asistentes ha sido enviada exitosamente al módulo de Vigilancia.');
     }
 
     function switchView(viewId, element) {
@@ -376,10 +418,6 @@
         document.getElementById('loginSection').style.display = 'flex';
         document.getElementById('loginEmail').value = '';
         document.getElementById('loginPass').value = '';
-    }
-
-    function sendWarning(email) {
-        alert("MENSAJE ENVIADO A: " + email + "\n\nURGENTE.! tu tiempo esta por acabarse, favor de ir guardando.!");
     }
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
