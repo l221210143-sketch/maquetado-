@@ -23,8 +23,8 @@
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-        .transport-fields { display: none; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px dashed #ced4da; margin-top: 10px; }
-        .transport-fields.active { display: block; }
+        .dynamic-field { display: none; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px dashed #ced4da; margin-top: 10px; }
+        .dynamic-field.active { display: block; }
 
         .btn-submit { width: 100%; background: #00a884; color: white; border: none; padding: 12px; font-size: 14px; font-weight: 700; border-radius: 6px; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
         .btn-submit:hover { background: #008f70; }
@@ -39,18 +39,14 @@
         <form onsubmit="event.preventDefault(); registrarVisita();">
             
             <div class="section-title">1. Datos Personales</div>
-            <div class="form-group">
-                <label>Nombre Completo *</label>
-                <input type="text" id="visNombre" required placeholder="Ej. Ana María Gómez">
-            </div>
             <div class="grid-2">
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="visNombre" required placeholder="Ej. Ana María Gómez">
+                </div>
                 <div class="form-group">
                     <label>Correo Electrónico *</label>
                     <input type="email" id="visCorreo" required placeholder="correo@ejemplo.com">
-                </div>
-                <div class="form-group">
-                    <label>Teléfono de Contacto</label>
-                    <input type="tel" id="visTelefono" placeholder="55 0000 0000">
                 </div>
             </div>
 
@@ -59,9 +55,30 @@
                 <label>Organización / Empresa a la que Pertenece o Visita *</label>
                 <input type="text" id="visEmpresa" required placeholder="Ej. Fundación Mexicana / CEMEFI / Empresa X">
             </div>
+
             <div class="form-group">
-                <label>Descripción / Motivo de la Visita *</label>
-                <textarea id="visDescripcion" required placeholder="Describa brevemente a qué va a la empresa o con quién tiene cita..."></textarea>
+                <label>Tipo de Visita *</label>
+                <select id="tipoVisita" onchange="actualizarTipoVisita()" required>
+                    <option value="">-- Seleccione una opción --</option>
+                    <option value="empleado">Visita a Empleado</option>
+                    <option value="evento">Evento</option>
+                    <option value="proveedor">Proveedor</option>
+                    <option value="servicio_social">Servicio Social</option>
+                    <option value="renta_salas">Renta de Salas</option>
+                </select>
+            </div>
+
+            <!-- CAMPO DINÁMICO SI ELIGE EVENTO -->
+            <div id="fieldNombreEvento" class="dynamic-field">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Nombre del Evento *</label>
+                    <input type="text" id="nombreEvento" placeholder="Ej. Foro de Sostenibilidad / Asamblea Anual">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Descripción / Detalles de la Visita *</label>
+                <textarea id="visDescripcion" required placeholder="Describa brevemente el motivo de su visita o la persona/área a consultar..."></textarea>
             </div>
 
             <div class="section-title">3. Medio de Transporte</div>
@@ -77,7 +94,7 @@
             </div>
 
             <!-- CAMPOS DINÁMICOS VEHÍCULO -->
-            <div id="fieldsVehiculo" class="transport-fields">
+            <div id="fieldsVehiculo" class="dynamic-field">
                 <div class="grid-3">
                     <div class="form-group">
                         <label>Placas *</label>
@@ -95,7 +112,7 @@
             </div>
 
             <!-- CAMPOS DINÁMICOS MOTOCICLETA -->
-            <div id="fieldsMoto" class="transport-fields">
+            <div id="fieldsMoto" class="dynamic-field">
                 <div class="grid-2">
                     <div class="form-group">
                         <label>Placas *</label>
@@ -113,14 +130,27 @@
     </div>
 
     <script>
+        function actualizarTipoVisita() {
+            const tipo = document.getElementById('tipoVisita').value;
+            const fieldEvento = document.getElementById('fieldNombreEvento');
+            const inputNombreEvento = document.getElementById('nombreEvento');
+
+            if (tipo === 'evento') {
+                fieldEvento.classList.add('active');
+                inputNombreEvento.required = true;
+            } else {
+                fieldEvento.classList.remove('active');
+                inputNombreEvento.required = false;
+                inputNombreEvento.value = '';
+            }
+        }
+
         function actualizarCamposTransporte() {
             const tipo = document.getElementById('tipoTransporte').value;
             
-            // Ocultar todos los contenedores opcionales
             document.getElementById('fieldsVehiculo').classList.remove('active');
             document.getElementById('fieldsMoto').classList.remove('active');
 
-            // Quitar requeridos
             document.getElementById('vehPlacas').required = false;
             document.getElementById('vehModelo').required = false;
             document.getElementById('vehColor').required = false;
